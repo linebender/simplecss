@@ -150,7 +150,7 @@ impl<'a> Selector<'a> {
 
     /// Compute the selector's specificity.
     ///
-    /// Cf. https://www.w3.org/TR/selectors/#specificity.
+    /// Cf. <https://www.w3.org/TR/selectors/#specificity>.
     pub fn specificity(&self) -> [u8; 3] {
         let mut spec = [0u8; 3];
 
