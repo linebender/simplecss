@@ -68,11 +68,13 @@ fn style_11() {
 
 #[test]
 fn style_12() {
-    let style = StyleSheet::parse("\
+    let style = StyleSheet::parse(
+        "\
 @media screen {
     p:before { content: 'Hello'; }
 }
-a { color:red }");
+a { color:red }",
+    );
     assert_eq!(style.to_string(), "a { color:red; }");
 }
 
@@ -120,12 +122,17 @@ fn style_19() {
 
 #[test]
 fn style_20() {
-    let style = StyleSheet::parse("\
+    let style = StyleSheet::parse(
+        "\
         h1 { color: green }
         h2 & h3 { color: red }
         h4 { color: black }
-    ");
-    assert_eq!(style.to_string(), "h1 { color:green; }\nh4 { color:black; }");
+    ",
+    );
+    assert_eq!(
+        style.to_string(),
+        "h1 { color:green; }\nh4 { color:black; }"
+    );
 }
 
 #[test]

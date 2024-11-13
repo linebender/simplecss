@@ -27,7 +27,6 @@ Since it's very simple we will start with limitations:
 */
 
 #![doc(html_root_url = "https://docs.rs/simplecss/0.2.1")]
-
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
@@ -40,7 +39,6 @@ mod stream;
 
 pub use selector::*;
 use stream::Stream;
-
 
 /// A list of possible errors.
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -61,7 +59,11 @@ pub enum Error {
 
     /// An invalid byte.
     #[allow(missing_docs)]
-    InvalidByte { expected: u8, actual: u8, pos: TextPos },
+    InvalidByte {
+        expected: u8,
+        actual: u8,
+        pos: TextPos,
+    },
 
     /// A missing selector.
     SelectorMissing,
@@ -94,9 +96,16 @@ impl fmt::Display for Error {
             Error::InvalidValue(pos) => {
                 write!(f, "invalid value at {}", pos)
             }
-            Error::InvalidByte { expected, actual, pos } => {
-                write!(f, "expected '{}' not '{}' at {}",
-                       expected as char, actual as char, pos)
+            Error::InvalidByte {
+                expected,
+                actual,
+                pos,
+            } => {
+                write!(
+                    f,
+                    "expected '{}' not '{}' at {}",
+                    expected as char, actual as char, pos
+                )
             }
             Error::SelectorMissing => {
                 write!(f, "selector missing")
@@ -118,7 +127,6 @@ impl fmt::Display for Error {
 }
 
 impl std::error::Error for Error {}
-
 
 /// A position in text.
 ///
@@ -144,7 +152,6 @@ impl fmt::Display for TextPos {
         write!(f, "{}:{}", self.row, self.col)
     }
 }
-
 
 /// A declaration.
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -216,7 +223,8 @@ impl<'a> StyleSheet<'a> {
         self.rules.retain(|rule| !rule.declarations.is_empty());
 
         // Sort the rules by specificity.
-        self.rules.sort_by_cached_key(|rule| rule.selector.specificity());
+        self.rules
+            .sort_by_cached_key(|rule| rule.selector.specificity());
     }
 }
 
@@ -285,7 +293,10 @@ fn consume_rule_set<'a>(s: &mut Stream<'a>, rules: &mut Vec<Rule<'a>>) -> Result
         s.skip_spaces();
 
         if let Some(selector) = selector {
-            rules.push(Rule { selector, declarations: Vec::new() });
+            rules.push(Rule {
+                selector,
+                declarations: Vec::new(),
+            });
         }
 
         match s.curr_byte()? {
@@ -357,7 +368,6 @@ fn consume_declarations<'a>(s: &mut Stream<'a>) -> Result<Vec<Declaration<'a>>, 
 
     Ok(declarations)
 }
-
 
 /// A declaration tokenizer.
 ///
@@ -455,7 +465,11 @@ fn consume_declaration<'a>(s: &mut Stream<'a>) -> Result<Declaration<'a>, Error>
         return Err(Error::InvalidValue(s.gen_text_pos_from(start)));
     }
 
-    Ok(Declaration { name, value, important })
+    Ok(Declaration {
+        name,
+        value,
+        important,
+    })
 }
 
 fn consume_term(s: &mut Stream) -> Result<(), Error> {

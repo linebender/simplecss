@@ -2,7 +2,6 @@ use std::str;
 
 use crate::{Error, TextPos};
 
-
 trait CssCharExt {
     fn is_name_start(&self) -> bool;
     fn is_name_char(&self) -> bool;
@@ -38,7 +37,6 @@ impl CssCharExt for char {
         false
     }
 }
-
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub(crate) struct Stream<'a> {
@@ -126,7 +124,8 @@ impl<'a> Stream<'a> {
     }
 
     pub fn consume_bytes<F>(&mut self, f: F) -> &'a str
-        where F: Fn(u8) -> bool
+    where
+        F: Fn(u8) -> bool,
     {
         let start = self.pos;
         self.skip_bytes(f);
@@ -134,7 +133,8 @@ impl<'a> Stream<'a> {
     }
 
     pub fn skip_bytes<F>(&mut self, f: F)
-        where F: Fn(u8) -> bool
+    where
+        F: Fn(u8) -> bool,
     {
         while !self.at_end() && f(self.curr_byte_unchecked()) {
             self.advance(1);

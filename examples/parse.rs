@@ -9,9 +9,7 @@ fn main() {
 
     std::env::set_var("RUST_LOG", "simplecss=warn");
     env_logger::builder()
-        .format(|buf, record| {
-            writeln!(buf, "{}: {}", record.level(), record.args())
-        })
+        .format(|buf, record| writeln!(buf, "{}: {}", record.level(), record.args()))
         .init();
 
     let text = if args[1] == "-" {

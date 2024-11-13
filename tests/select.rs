@@ -22,7 +22,11 @@ impl simplecss::Element for XmlNode<'_, '_> {
     }
 
     fn prev_sibling_element(&self) -> Option<Self> {
-        self.0.prev_siblings().filter(|n| n.is_element()).nth(0).map(XmlNode)
+        self.0
+            .prev_siblings()
+            .filter(|n| n.is_element())
+            .nth(0)
+            .map(XmlNode)
     }
 
     fn has_local_name(&self, local_name: &str) -> bool {
@@ -86,31 +90,38 @@ fn select_04() {
 
 #[test]
 fn select_05() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p id='p1'/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "div p"), "p1");
 }
 
 #[test]
 fn select_06() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <g id='g1'>
         <p id='p1'/>
     </g>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "div p"), "p1");
 }
 
 #[test]
 fn select_07() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <div id='div2'>
         <g id='g1'>
@@ -118,14 +129,17 @@ fn select_07() {
         </g>
     </div>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "div p"), "p1");
 }
 
 #[test]
 fn select_08() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <g id='g1'>
         <p id='p1'>
@@ -133,60 +147,74 @@ fn select_08() {
         </p>
     </g>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "div p"), "p1");
 }
 
 #[test]
 fn select_09() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <g id='g1'>
         <p id='p1'/>
     </g>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "div g p"), "p1");
 }
 
 #[test]
 fn select_10() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <q id='g1'>
         <p id='p1'/>
     </q>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     match_none!(doc, "div g p");
 }
 
 #[test]
 fn select_11() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <g id='g1'>
         <p id='p1'/>
     </g>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "div * p"), "p1");
 }
 
 #[test]
 fn select_12() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p id='p1'>
         <rect id='rect1'/>
         <rect id='rect2' color='green'/>
     </p>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "div p *[color]"), "rect2");
     assert_eq!(match_single!(doc, "div p [color]"), "rect2");
@@ -194,40 +222,50 @@ fn select_12() {
 
 #[test]
 fn select_13() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p id='p1'/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "div > p"), "p1");
 }
 
 #[test]
 fn select_14() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <p id='p1'/>
-").unwrap();
+",
+    )
+    .unwrap();
 
     match_none!(doc, "div > p");
 }
 
 #[test]
 fn select_15() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <g id='g1'>
         <p id='p1'/>
     </g>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     match_none!(doc, "div > p");
 }
 
 #[test]
 fn select_16() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p>
         <ol>
@@ -239,14 +277,17 @@ fn select_16() {
         </ol>
     </p>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "div ol>li p"), "p1");
 }
 
 #[test]
 fn select_17() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p>
         <ol>
@@ -260,99 +301,125 @@ fn select_17() {
         </ol>
     </p>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     match_none!(doc, "div ol>li p");
 }
 
 #[test]
 fn select_18() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <g/>
     <p id='p1'/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "g + p"), "p1");
 }
 
 #[test]
 fn select_19() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <test/>
     <g/>
     <p id='p1'/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "g + p"), "p1");
 }
 
 #[test]
 fn select_20() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p id='p1'/>
     <g/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     match_none!(doc, "g + p");
 }
 
 #[test]
 fn select_21() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p id='p1'/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     match_none!(doc, "div + p");
 }
 
 #[test]
 fn select_22() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p id='p1'/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "[id=p1]"), "p1");
 }
 
 #[test]
 fn select_23() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p id='p1' class='test warn'/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "[class~=warn]"), "p1");
 }
 
 #[test]
 fn select_24() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p id='p1' class='test warn'/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     match_none!(doc, "[class~='test warn']");
 }
 
 #[test]
 fn select_25() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p id='p1' lang='en'/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "[lang=en]"), "p1");
     assert_eq!(match_single!(doc, "[lang|=en]"), "p1");
@@ -360,11 +427,14 @@ fn select_25() {
 
 #[test]
 fn select_26() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p id='p1' lang='en-US'/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "[lang='en-US']"), "p1");
     assert_eq!(match_single!(doc, "[lang|=en]"), "p1");
@@ -372,46 +442,58 @@ fn select_26() {
 
 #[test]
 fn select_27() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p id='p1' class='pastoral blue aqua marine'/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, ".marine.pastoral"), "p1");
 }
 
 #[test]
 fn select_28() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p id='p1'/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     assert_eq!(match_single!(doc, "p:first-child"), "p1");
 }
 
 #[test]
 fn select_29() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <rect/>
     <p id='p1'/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     match_none!(doc, "p:first-child");
 }
 
 #[test]
 fn select_30() {
-    let doc = roxmltree::Document::parse("\
+    let doc = roxmltree::Document::parse(
+        "\
 <div id='div1'>
     <p id='p1'/>
     <p id='p2'/>
 </div>
-").unwrap();
+",
+    )
+    .unwrap();
 
     let nodes = XmlNode(doc.root_element()).select(":first-child");
     assert_eq!(nodes.len(), 2);

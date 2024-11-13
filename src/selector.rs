@@ -5,7 +5,6 @@ use log::warn;
 use crate::stream::Stream;
 use crate::Error;
 
-
 /// An attribute selector operator.
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum AttributeOperator<'a> {
@@ -23,21 +22,15 @@ impl<'a> AttributeOperator<'a> {
     /// Checks that value is matching the operator.
     pub fn matches(&self, value: &str) -> bool {
         match *self {
-            AttributeOperator::Exists => {
-                true
-            }
-            AttributeOperator::Matches(v) => {
-                value == v
-            }
-            AttributeOperator::Contains(v) => {
-                value.split(' ').any(|s| s == v)
-            }
+            AttributeOperator::Exists => true,
+            AttributeOperator::Matches(v) => value == v,
+            AttributeOperator::Contains(v) => value.split(' ').any(|s| s == v),
             AttributeOperator::StartsWith(v) => {
                 // exactly `v` or beginning with `v` immediately followed by `-`
                 if value == v {
                     true
                 } else if value.starts_with(v) {
-                    value.get(v.len()..v.len()+1) == Some("-")
+                    value.get(v.len()..v.len() + 1) == Some("-")
                 } else {
                     false
                 }
@@ -45,7 +38,6 @@ impl<'a> AttributeOperator<'a> {
         }
     }
 }
-
 
 /// A pseudo-class.
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -74,7 +66,6 @@ impl fmt::Display for PseudoClass<'_> {
     }
 }
 
-
 /// A trait to query an element node metadata.
 pub trait Element: Sized {
     /// Returns a parent element.
@@ -93,13 +84,11 @@ pub trait Element: Sized {
     fn pseudo_class_matches(&self, class: PseudoClass) -> bool;
 }
 
-
 #[derive(Clone, Copy, PartialEq, Debug)]
 enum SimpleSelectorType<'a> {
     Type(&'a str),
     Universal,
 }
-
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 enum SubSelector<'a> {
@@ -107,13 +96,11 @@ enum SubSelector<'a> {
     PseudoClass(PseudoClass<'a>),
 }
 
-
 #[derive(Clone, Debug)]
 struct SimpleSelector<'a> {
     kind: SimpleSelectorType<'a>,
     subselectors: Vec<SubSelector<'a>>,
 }
-
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 enum Combinator {
@@ -123,7 +110,6 @@ enum Combinator {
     AdjacentSibling,
 }
 
-
 #[derive(Clone, Debug)]
 struct Component<'a> {
     /// A combinator that precede the selector.
@@ -131,11 +117,10 @@ struct Component<'a> {
     selector: SimpleSelector<'a>,
 }
 
-
 /// A selector.
 #[derive(Clone, Debug)]
 pub struct Selector<'a> {
-    components: Vec<Component<'a>>
+    components: Vec<Component<'a>>,
 }
 
 impl<'a> Selector<'a> {
@@ -173,8 +158,11 @@ impl<'a> Selector<'a> {
     /// Checks that the provided element matches the current selector.
     pub fn matches<E: Element>(&self, element: &E) -> bool {
         assert!(!self.components.is_empty(), "selector must not be empty");
-        assert_eq!(self.components[0].combinator, Combinator::None,
-                   "the first component must not have a combinator");
+        assert_eq!(
+            self.components[0].combinator,
+            Combinator::None,
+            "the first component must not have a combinator"
+        );
 
         self.matches_impl(self.components.len() - 1, element)
     }
@@ -217,9 +205,7 @@ impl<'a> Selector<'a> {
 
                 false
             }
-            Combinator::None => {
-                true
-            }
+            Combinator::None => true,
         }
     }
 }
@@ -305,7 +291,10 @@ pub(crate) fn parse(text: &str) -> (Option<Selector>, usize) {
                 combinator = Combinator::None;
             }
             SelectorToken::ClassSelector(ident) => {
-                add_sub(SubSelector::Attribute("class", AttributeOperator::Contains(ident)));
+                add_sub(SubSelector::Attribute(
+                    "class",
+                    AttributeOperator::Contains(ident),
+                ));
             }
             SelectorToken::IdSelector(id) => {
                 add_sub(SubSelector::Attribute("id", AttributeOperator::Matches(id)));
@@ -350,8 +339,11 @@ pub(crate) fn parse(text: &str) -> (Option<Selector>, usize) {
     if components.is_empty() {
         (None, tokenizer.stream.pos())
     } else if components[0].combinator != Combinator::None {
-        debug_assert_eq!(components[0].combinator, Combinator::None,
-                         "the first component must not have a combinator");
+        debug_assert_eq!(
+            components[0].combinator,
+            Combinator::None,
+            "the first component must not have a combinator"
+        );
 
         (None, tokenizer.stream.pos())
     } else {
@@ -401,7 +393,6 @@ impl<'a> fmt::Display for Selector<'a> {
     }
 }
 
-
 /// A selector token.
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum SelectorToken<'a> {
@@ -435,7 +426,6 @@ pub enum SelectorToken<'a> {
     /// `a + b`
     AdjacentCombinator,
 }
-
 
 /// A selector tokenizer.
 ///
@@ -521,9 +511,7 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
                 let ident = try2!(self.stream.consume_ident());
 
                 let op = match try2!(self.stream.curr_byte()) {
-                    b']' => {
-                        AttributeOperator::Exists
-                    }
+                    b']' => AttributeOperator::Exists,
                     b'=' => {
                         self.stream.advance(1);
                         let value = try2!(self.stream.consume_string());
@@ -606,9 +594,7 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
                 }
 
                 match self.stream.curr_byte() {
-                    Ok(b'>') | Ok(b'+') | Ok(b',') | Ok(b'{') | Err(_) => {
-                        self.next()
-                    }
+                    Ok(b'>') | Ok(b'+') | Ok(b',') | Ok(b'{') | Err(_) => self.next(),
                     _ => {
                         if self.after_combinator {
                             self.after_combinator = false;
