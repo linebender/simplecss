@@ -1,4 +1,4 @@
-use std::str;
+use core::str;
 
 use crate::{Error, TextPos};
 
@@ -284,7 +284,7 @@ impl<'a> Stream<'a> {
     #[inline(never)]
     pub fn gen_text_pos_from(&self, pos: usize) -> TextPos {
         let mut s = *self;
-        s.pos = std::cmp::min(pos, self.text.len());
+        s.pos = core::cmp::min(pos, self.text.len());
         s.gen_text_pos()
     }
 

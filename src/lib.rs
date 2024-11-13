@@ -27,10 +27,14 @@ Since it's very simple we will start with limitations:
 */
 
 #![doc(html_root_url = "https://docs.rs/simplecss/0.2.1")]
+#![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
-use std::fmt;
+extern crate alloc;
+
+use alloc::vec::Vec;
+use core::fmt;
 
 use log::warn;
 
@@ -126,6 +130,7 @@ impl fmt::Display for Error {
     }
 }
 
+#[cfg(feature = "std")]
 impl std::error::Error for Error {}
 
 /// A position in text.
