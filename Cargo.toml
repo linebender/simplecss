@@ -10,6 +10,7 @@ keywords = ["css", "parser", "selector"]
 categories = ["parser-implementations"]
 edition = "2021"
 exclude = ["testing-tools/**"]
+rust-version = "1.65"
 
 [features]
 default = ["std"]

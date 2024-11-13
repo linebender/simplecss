@@ -1,3 +1,6 @@
+// Copyright 2016 the SimpleCSS Authors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
 /*!
 A simple [CSS 2.1](https://www.w3.org/TR/CSS21/) parser and selector.
 

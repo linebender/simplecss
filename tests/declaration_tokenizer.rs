@@ -1,3 +1,6 @@
+// Copyright 2019 the SimpleCSS Authors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
 use simplecss::*;
 
 macro_rules! tokenize {
