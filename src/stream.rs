@@ -1,3 +1,6 @@
+// Copyright 2016 the SimpleCSS Authors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
 use core::str;
 
 use crate::{Error, TextPos};

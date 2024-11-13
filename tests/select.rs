@@ -1,3 +1,6 @@
+// Copyright 2019 the SimpleCSS Authors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
 use simplecss::*;
 
 struct XmlNode<'a, 'input: 'a>(roxmltree::Node<'a, 'input>);
