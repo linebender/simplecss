@@ -16,7 +16,11 @@ impl simplecss::Element for XmlNode<'_, '_> {
     }
 
     fn prev_sibling_element(&self) -> Option<Self> {
-        self.0.prev_siblings().filter(|n| n.is_element()).nth(0).map(XmlNode)
+        self.0
+            .prev_siblings()
+            .filter(|n| n.is_element())
+            .nth(0)
+            .map(XmlNode)
     }
 
     fn has_local_name(&self, local_name: &str) -> bool {
@@ -45,13 +49,17 @@ fn main() {
                 <rect id='rect1' class='round blue'/>
                 <rect id='rect2' color='red'/>
             </g>
-        </svg>"
-    ).unwrap();
+        </svg>",
+    )
+    .unwrap();
     let root = XmlNode(doc.root_element());
 
     assert_eq!(
-        root.select("rect:first-child").unwrap().attribute("id").unwrap(),
-         "rect1"
+        root.select("rect:first-child")
+            .unwrap()
+            .attribute("id")
+            .unwrap(),
+        "rect1"
     );
 
     assert_eq!(
@@ -65,7 +73,10 @@ fn main() {
     );
 
     assert_eq!(
-        root.select("svg > g > rect").unwrap().attribute("id").unwrap(),
+        root.select("svg > g > rect")
+            .unwrap()
+            .attribute("id")
+            .unwrap(),
         "rect1"
     );
 
