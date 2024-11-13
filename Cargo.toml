@@ -8,11 +8,15 @@ description = "A simple CSS 2 parser and selector."
 repository = "https://github.com/RazrFalcon/simplecss"
 keywords = ["css", "parser", "selector"]
 categories = ["parser-implementations"]
-edition = "2018"
+edition = "2021"
 exclude = ["testing-tools/**"]
 
+[features]
+default = ["std"]
+std = ["log/std"]
+
 [dependencies]
-log = "0.4.8"
+log = { version = "0.4.8", default-features = false }
 
 [dev-dependencies]
 env_logger = { version = "0.6", default-features = false }
