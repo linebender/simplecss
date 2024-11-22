@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+This release has an [MSRV][] of 1.65.
+
 ## [0.2.1] - 2021-07-20
 - Add rules sorting by specificity. Thanks to [@baskerville](https://github.com/baskerville)
 
@@ -18,3 +20,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 [Unreleased]: https://github.com/RazrFalcon/simplecss/compare/v0.2.1...HEAD
 [0.2.1]: https://github.com/RazrFalcon/simplecss/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/RazrFalcon/simplecss/compare/v0.1.0...v0.2.0
+
+[MSRV]: README.md#minimum-supported-rust-version-msrv
