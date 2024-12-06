@@ -40,7 +40,6 @@ Since it's very simple we will start with limitations:
 // END LINEBENDER LINT SET
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
-#![doc(html_root_url = "https://docs.rs/simplecss/0.2.1")]
 // The following lints are part of the Linebender standard set,
 // but resolving them has been deferred for now.
 // Feel free to send a PR that solves one or more of these.
