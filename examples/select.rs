@@ -1,6 +1,8 @@
 // Copyright 2019 the SimpleCSS Authors
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
+//! Select
+
 struct XmlNode<'a, 'input: 'a>(roxmltree::Node<'a, 'input>);
 
 impl<'a, 'input: 'a> XmlNode<'a, 'input> {
@@ -30,14 +32,18 @@ impl simplecss::Element for XmlNode<'_, '_> {
         self.0.tag_name().name() == local_name
     }
 
-    fn attribute_matches(&self, local_name: &str, operator: simplecss::AttributeOperator) -> bool {
+    fn attribute_matches(
+        &self,
+        local_name: &str,
+        operator: simplecss::AttributeOperator<'_>,
+    ) -> bool {
         match self.0.attribute(local_name) {
             Some(value) => operator.matches(value),
             None => false,
         }
     }
 
-    fn pseudo_class_matches(&self, class: simplecss::PseudoClass) -> bool {
+    fn pseudo_class_matches(&self, class: simplecss::PseudoClass<'_>) -> bool {
         match class {
             simplecss::PseudoClass::FirstChild => self.prev_sibling_element().is_none(),
             _ => false, // Since we are querying a static XML we can ignore other pseudo-classes.
@@ -62,17 +68,20 @@ fn main() {
             .unwrap()
             .attribute("id")
             .unwrap(),
-        "rect1"
+        "rect1",
+        "selected wrong element"
     );
 
     assert_eq!(
         root.select("[color=red]").unwrap().attribute("id").unwrap(),
-        "rect2"
+        "rect2",
+        "selected wrong element"
     );
 
     assert_eq!(
         root.select("svg rect").unwrap().attribute("id").unwrap(),
-        "rect1"
+        "rect1",
+        "selected wrong element"
     );
 
     assert_eq!(
@@ -80,11 +89,13 @@ fn main() {
             .unwrap()
             .attribute("id")
             .unwrap(),
-        "rect1"
+        "rect1",
+        "selected wrong element"
     );
 
     assert_eq!(
         root.select(".blue").unwrap().attribute("id").unwrap(),
-        "rect1"
+        "rect1",
+        "selected wrong element"
     );
 }

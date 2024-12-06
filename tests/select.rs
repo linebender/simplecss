@@ -1,6 +1,8 @@
 // Copyright 2019 the SimpleCSS Authors
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
+//! Select
+
 use simplecss::*;
 
 struct XmlNode<'a, 'input: 'a>(roxmltree::Node<'a, 'input>);
@@ -19,7 +21,7 @@ impl<'a, 'input: 'a> XmlNode<'a, 'input> {
     }
 }
 
-impl simplecss::Element for XmlNode<'_, '_> {
+impl Element for XmlNode<'_, '_> {
     fn parent_element(&self) -> Option<Self> {
         self.0.parent_element().map(XmlNode)
     }
@@ -36,14 +38,14 @@ impl simplecss::Element for XmlNode<'_, '_> {
         self.0.tag_name().name() == local_name
     }
 
-    fn attribute_matches(&self, local_name: &str, operator: AttributeOperator) -> bool {
+    fn attribute_matches(&self, local_name: &str, operator: AttributeOperator<'_>) -> bool {
         match self.0.attribute(local_name) {
             Some(value) => operator.matches(value),
             None => false,
         }
     }
 
-    fn pseudo_class_matches(&self, class: PseudoClass) -> bool {
+    fn pseudo_class_matches(&self, class: PseudoClass<'_>) -> bool {
         match class {
             PseudoClass::FirstChild => self.prev_sibling_element().is_none(),
             _ => false,
