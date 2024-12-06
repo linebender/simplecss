@@ -29,10 +29,33 @@ Since it's very simple we will start with limitations:
 - No unsafe.
 */
 
-#![doc(html_root_url = "https://docs.rs/simplecss/0.2.1")]
+// LINEBENDER LINT SET - lib.rs - v2
+// See https://linebender.org/wiki/canonical-lints/
+// These lints aren't included in Cargo.toml because they
+// shouldn't apply to examples and tests
+#![warn(unused_crate_dependencies)]
+#![warn(clippy::print_stdout, clippy::print_stderr)]
+// Targeting e.g. 32-bit means structs containing usize can give false positives for 64-bit.
+#![cfg_attr(target_pointer_width = "64", warn(clippy::trivially_copy_pass_by_ref))]
+// END LINEBENDER LINT SET
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
-#![forbid(unsafe_code)]
-#![warn(missing_docs)]
+#![doc(html_root_url = "https://docs.rs/simplecss/0.2.1")]
+// The following lints are part of the Linebender standard set,
+// but resolving them has been deferred for now.
+// Feel free to send a PR that solves one or more of these.
+#![allow(
+    missing_debug_implementations,
+    elided_lifetimes_in_paths,
+    single_use_lifetimes,
+    unreachable_pub,
+    clippy::use_self,
+    clippy::missing_assert_message,
+    clippy::missing_panics_doc,
+    clippy::exhaustive_enums,
+    clippy::unseparated_literal_suffix
+)]
+#![cfg_attr(test, allow(unused_crate_dependencies))] // Some dev dependencies are only used in tests
 
 extern crate alloc;
 
@@ -258,7 +281,7 @@ impl fmt::Display for StyleSheet<'_> {
     }
 }
 
-impl<'a> Default for StyleSheet<'a> {
+impl Default for StyleSheet<'_> {
     fn default() -> Self {
         Self::new()
     }
@@ -296,7 +319,7 @@ fn consume_rule_set<'a>(s: &mut Stream<'a>, rules: &mut Vec<Rule<'a>>) -> Result
             s.advance(1);
         }
 
-        let (selector, offset) = crate::selector::parse(s.slice_tail());
+        let (selector, offset) = parse(s.slice_tail());
         s.advance(offset);
         s.skip_spaces();
 

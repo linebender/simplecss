@@ -22,7 +22,7 @@ pub enum AttributeOperator<'a> {
     StartsWith(&'a str),
 }
 
-impl<'a> AttributeOperator<'a> {
+impl AttributeOperator<'_> {
     /// Checks that value is matching the operator.
     pub fn matches(&self, value: &str) -> bool {
         match *self {
@@ -355,7 +355,7 @@ pub(crate) fn parse(text: &str) -> (Option<Selector>, usize) {
     }
 }
 
-impl<'a> fmt::Display for Selector<'a> {
+impl fmt::Display for Selector<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for component in &self.components {
             match component.combinator {
