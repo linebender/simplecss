@@ -258,7 +258,7 @@ impl fmt::Display for StyleSheet<'_> {
     }
 }
 
-impl<'a> Default for StyleSheet<'a> {
+impl Default for StyleSheet<'_> {
     fn default() -> Self {
         Self::new()
     }
