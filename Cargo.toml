@@ -80,8 +80,8 @@ default = ["std"]
 std = ["log/std"]
 
 [dependencies]
-log = { version = "0.4.8", default-features = false }
+log = { version = "0.4.22", default-features = false }
 
 [dev-dependencies]
-env_logger = { version = "0.6", default-features = false }
-roxmltree = "0.7"
+env_logger = { version = "0.11.6", default-features = false }
+roxmltree = "0.20.0"

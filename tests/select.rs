@@ -27,11 +27,7 @@ impl Element for XmlNode<'_, '_> {
     }
 
     fn prev_sibling_element(&self) -> Option<Self> {
-        self.0
-            .prev_siblings()
-            .filter(|n| n.is_element())
-            .nth(0)
-            .map(XmlNode)
+        self.0.prev_sibling_element().map(XmlNode)
     }
 
     fn has_local_name(&self, local_name: &str) -> bool {
