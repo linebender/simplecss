@@ -57,7 +57,7 @@ pub enum PseudoClass<'a> {
 }
 
 impl fmt::Display for PseudoClass<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             PseudoClass::FirstChild => write!(f, "first-child"),
             PseudoClass::Link => write!(f, "link"),
@@ -82,10 +82,10 @@ pub trait Element: Sized {
     fn has_local_name(&self, name: &str) -> bool;
 
     /// Checks that the element has a specified attribute.
-    fn attribute_matches(&self, local_name: &str, operator: AttributeOperator) -> bool;
+    fn attribute_matches(&self, local_name: &str, operator: AttributeOperator<'_>) -> bool;
 
     /// Checks that the element matches a specified pseudo-class.
-    fn pseudo_class_matches(&self, class: PseudoClass) -> bool;
+    fn pseudo_class_matches(&self, class: PseudoClass<'_>) -> bool;
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -214,7 +214,7 @@ impl<'a> Selector<'a> {
     }
 }
 
-fn match_selector<E: Element>(selector: &SimpleSelector, element: &E) -> bool {
+fn match_selector<E: Element>(selector: &SimpleSelector<'_>, element: &E) -> bool {
     if let SimpleSelectorType::Type(ident) = selector.kind {
         if !element.has_local_name(ident) {
             return false;
@@ -239,8 +239,8 @@ fn match_selector<E: Element>(selector: &SimpleSelector, element: &E) -> bool {
     true
 }
 
-pub(crate) fn parse(text: &str) -> (Option<Selector>, usize) {
-    let mut components: Vec<Component> = Vec::new();
+pub(crate) fn parse(text: &str) -> (Option<Selector<'_>>, usize) {
+    let mut components: Vec<Component<'_>> = Vec::new();
     let mut combinator = Combinator::None;
 
     let mut tokenizer = SelectorTokenizer::from(text);
@@ -356,7 +356,7 @@ pub(crate) fn parse(text: &str) -> (Option<Selector>, usize) {
 }
 
 impl fmt::Display for Selector<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for component in &self.components {
             match component.combinator {
                 Combinator::Descendant => write!(f, " ")?,
