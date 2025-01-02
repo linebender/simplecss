@@ -45,8 +45,6 @@ Since it's very simple we will start with limitations:
 // Feel free to send a PR that solves one or more of these.
 #![allow(
     missing_debug_implementations,
-    elided_lifetimes_in_paths,
-    single_use_lifetimes,
     unreachable_pub,
     clippy::use_self,
     clippy::missing_assert_message,
@@ -111,7 +109,7 @@ pub enum Error {
 }
 
 impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             Error::UnexpectedEndOfStream => {
                 write!(f, "unexpected end of stream")
@@ -178,7 +176,7 @@ impl TextPos {
 }
 
 impl fmt::Display for TextPos {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}:{}", self.row, self.col)
     }
 }
@@ -259,7 +257,7 @@ impl<'a> StyleSheet<'a> {
 }
 
 impl fmt::Display for StyleSheet<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (i, rule) in self.rules.iter().enumerate() {
             write!(f, "{} {{ ", rule.selector)?;
             for dec in &rule.declarations {
@@ -295,7 +293,7 @@ fn consume_statement<'a>(s: &mut Stream<'a>, rules: &mut Vec<Rule<'a>>) -> Resul
     }
 }
 
-fn consume_at_rule(s: &mut Stream) -> Result<(), Error> {
+fn consume_at_rule(s: &mut Stream<'_>) -> Result<(), Error> {
     let ident = s.consume_ident()?;
     warn!("The @{} rule is not supported. Skipped.", ident);
 
@@ -351,12 +349,12 @@ fn consume_rule_set<'a>(s: &mut Stream<'a>, rules: &mut Vec<Rule<'a>>) -> Result
     Ok(())
 }
 
-fn consume_block(s: &mut Stream) {
+fn consume_block(s: &mut Stream<'_>) {
     s.try_consume_byte(b'{');
     consume_until_block_end(s);
 }
 
-fn consume_until_block_end(s: &mut Stream) {
+fn consume_until_block_end(s: &mut Stream<'_>) {
     // Block can have nested blocks, so we have to check for matching braces.
     // We simply counting the number of opening braces, which is incorrect,
     // since `{` can be inside a string, but it's fine for majority of the cases.
@@ -502,8 +500,8 @@ fn consume_declaration<'a>(s: &mut Stream<'a>) -> Result<Declaration<'a>, Error>
     })
 }
 
-fn consume_term(s: &mut Stream) -> Result<(), Error> {
-    fn consume_digits(s: &mut Stream) {
+fn consume_term(s: &mut Stream<'_>) -> Result<(), Error> {
+    fn consume_digits(s: &mut Stream<'_>) {
         while let Ok(b'0'..=b'9') = s.curr_byte() {
             s.advance(1);
         }
