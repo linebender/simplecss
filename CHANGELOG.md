@@ -15,9 +15,8 @@ You can find its changes [documented below](#021-2021-07-20).
 
 This release has an [MSRV][] of 1.65.
 
-This is the first release under the stewardship of [Linebender][], who is now responsible for maintenance
-of this crate. Many thanks to Yevhenii Reizner for the years of hard work that he has poured into this and
-other crates.
+This is the first release under the stewardship of [Linebender][], who is now responsible for maintenance of this crate.
+Many thanks to Yevhenii Reizner for the years of hard work that he has poured into this and other crates.
 
 ## Added
 
