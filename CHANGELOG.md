@@ -8,17 +8,21 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 -->
 
-The latest published SimpleCSS release is [0.2.1](#021-2021-07-20) which was released on 2021-07-20.
-You can find its changes [documented below](#021-2021-07-20).
+The latest published SimpleCSS release is [0.2.2](#022-2025-01-06) which was released on 2022-01-06.
+You can find its changes [documented below](#022-2025-01-06).
 
 ## [Unreleased]
+
+This release has an [MSRV][] of 1.65.
+
+## [0.2.2][] (2025-01-06)
 
 This release has an [MSRV][] of 1.65.
 
 This is the first release under the stewardship of [Linebender][], who is now responsible for maintenance of this crate.
 Many thanks to Yevhenii Reizner for the years of hard work that he has poured into this and other crates.
 
-## Added
+### Added
 
 - Support for `no_std`. ([#17][] by [@waywardmonkeys][])
 
@@ -43,6 +47,7 @@ Many thanks to Yevhenii Reizner for the years of hard work that he has poured in
 [@baskerville]: https://github.com/baskerville
 [@waywardmonkeys]: https://github.com/waywardmonkeys
 
-[Unreleased]: https://github.com/RazrFalcon/simplecss/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/RazrFalcon/simplecss/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/RazrFalcon/simplecss/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/RazrFalcon/simplecss/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/RazrFalcon/simplecss/compare/v0.1.0...v0.2.0

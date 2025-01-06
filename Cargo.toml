@@ -1,6 +1,6 @@
 [package]
 name = "simplecss"
-version = "0.2.1"
+version = "0.2.2"
 license = "Apache-2.0 OR MIT"
 edition = "2021"
 description = "A simple CSS 2 parser and selector."
