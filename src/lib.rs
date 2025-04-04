@@ -39,7 +39,7 @@ Since it's very simple we will start with limitations:
 #![cfg_attr(target_pointer_width = "64", warn(clippy::trivially_copy_pass_by_ref))]
 // END LINEBENDER LINT SET
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
-#![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
+#![no_std]
 // The following lints are part of the Linebender standard set,
 // but resolving them has been deferred for now.
 // Feel free to send a PR that solves one or more of these.
@@ -55,6 +55,8 @@ Since it's very simple we will start with limitations:
 #![cfg_attr(test, allow(unused_crate_dependencies))] // Some dev dependencies are only used in tests
 
 extern crate alloc;
+#[cfg(feature = "std")]
+extern crate std;
 
 use alloc::vec::Vec;
 use core::fmt;
