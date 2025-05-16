@@ -117,13 +117,13 @@ impl fmt::Display for Error {
                 write!(f, "unexpected end of stream")
             }
             Error::InvalidIdent(pos) => {
-                write!(f, "invalid ident at {}", pos)
+                write!(f, "invalid ident at {pos}")
             }
             Error::InvalidComment(pos) => {
-                write!(f, "invalid comment at {}", pos)
+                write!(f, "invalid comment at {pos}")
             }
             Error::InvalidValue(pos) => {
-                write!(f, "invalid value at {}", pos)
+                write!(f, "invalid value at {pos}")
             }
             Error::InvalidByte {
                 expected,

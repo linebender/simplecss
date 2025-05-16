@@ -28,5 +28,5 @@ fn main() {
     };
 
     let style = simplecss::StyleSheet::parse(&text);
-    println!("{:#?}", style);
+    println!("{style:#?}");
 }
