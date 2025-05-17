@@ -65,7 +65,7 @@ impl fmt::Display for PseudoClass<'_> {
             PseudoClass::Hover => write!(f, "hover"),
             PseudoClass::Active => write!(f, "active"),
             PseudoClass::Focus => write!(f, "focus"),
-            PseudoClass::Lang(lang) => write!(f, "lang({})", lang),
+            PseudoClass::Lang(lang) => write!(f, "lang({lang})"),
         }
     }
 }
@@ -367,7 +367,7 @@ impl fmt::Display for Selector<'_> {
 
             match component.selector.kind {
                 SimpleSelectorType::Universal => write!(f, "*")?,
-                SimpleSelectorType::Type(ident) => write!(f, "{}", ident)?,
+                SimpleSelectorType::Type(ident) => write!(f, "{ident}")?,
             };
 
             for sel in &component.selector.subselectors {
@@ -375,20 +375,20 @@ impl fmt::Display for Selector<'_> {
                     SubSelector::Attribute(name, operator) => {
                         match operator {
                             AttributeOperator::Exists => {
-                                write!(f, "[{}]", name)?;
+                                write!(f, "[{name}]")?;
                             }
                             AttributeOperator::Matches(value) => {
-                                write!(f, "[{}='{}']", name, value)?;
+                                write!(f, "[{name}='{value}']")?;
                             }
                             AttributeOperator::Contains(value) => {
-                                write!(f, "[{}~='{}']", name, value)?;
+                                write!(f, "[{name}~='{value}']")?;
                             }
                             AttributeOperator::StartsWith(value) => {
-                                write!(f, "[{}|='{}']", name, value)?;
+                                write!(f, "[{name}|='{value}']")?;
                             }
                         };
                     }
-                    SubSelector::PseudoClass(class) => write!(f, ":{}", class)?,
+                    SubSelector::PseudoClass(class) => write!(f, ":{class}")?,
                 }
             }
         }
