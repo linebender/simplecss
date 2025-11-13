@@ -16,7 +16,7 @@ impl CssCharExt for char {
     #[inline]
     fn is_name_start(&self) -> bool {
         match *self {
-            '_' | 'a'..='z' | 'A'..='Z' => true,
+            '-' | '_' | 'a'..='z' | 'A'..='Z' => true,
             _ => self.is_non_ascii() || self.is_escape(),
         }
     }
