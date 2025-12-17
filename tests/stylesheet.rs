@@ -145,3 +145,77 @@ fn style_21() {
     let style = StyleSheet::parse(":le>*");
     assert_eq!(style.to_string(), "");
 }
+
+#[test]
+fn font_face_01() {
+    let style = StyleSheet::parse(
+        "@font-face { font-family: 'Noto Serif'; src: url(NotoSerif.woff2) format('woff2'); }",
+    );
+
+    assert_eq!(style.rules.len(), 0);
+    assert_eq!(style.font_faces.len(), 1);
+
+    let ff = &style.font_faces[0];
+    assert_eq!(
+        ff.declarations,
+        vec![
+            Declaration {
+                name: "font-family",
+                value: "'Noto Serif'",
+                important: false,
+            },
+            Declaration {
+                name: "src",
+                value: "url(NotoSerif.woff2) format('woff2')",
+                important: false,
+            },
+        ]
+    );
+}
+
+#[test]
+fn font_face_02_mixed_with_rules() {
+    let style = StyleSheet::parse(
+        "@font-face { font-family: 'MyFont'; src: url(https://foo.com/my.woff2); font-weight: normal; } div { color: red; }",
+    );
+
+    assert_eq!(style.rules.len(), 1);
+    assert_eq!(style.font_faces.len(), 1);
+
+    assert_eq!(style.rules[0].selector.to_string(), "div");
+    assert_eq!(style.rules[0].declarations.len(), 1);
+    assert_eq!(style.rules[0].declarations[0].name, "color");
+    assert_eq!(style.rules[0].declarations[0].value, "red");
+
+    assert_eq!(style.font_faces[0].declarations[0].name, "font-family");
+    assert_eq!(style.font_faces[0].declarations[0].value, "'MyFont'");
+    assert_eq!(style.font_faces[0].declarations[1].name, "src");
+    assert_eq!(
+        style.font_faces[0].declarations[1].value,
+        "url(https://foo.com/my.woff2)"
+    );
+    assert_eq!(style.font_faces[0].declarations[2].name, "font-weight");
+    assert_eq!(style.font_faces[0].declarations[2].value, "normal");
+}
+
+#[test]
+fn font_face_03_mixed_with_rules() {
+    let style = StyleSheet::parse(
+        "@font-palette-values --identifier { font-family: Bixa; override-colors: 0 green, 1 #999; } div { color: red; } @font-face { font-family: 'MyFont'; src: local('Airal'); font-weight: 200 800; }",
+    );
+
+    assert_eq!(style.rules.len(), 1);
+    assert_eq!(style.font_faces.len(), 1);
+
+    assert_eq!(style.rules[0].selector.to_string(), "div");
+    assert_eq!(style.rules[0].declarations.len(), 1);
+    assert_eq!(style.rules[0].declarations[0].name, "color");
+    assert_eq!(style.rules[0].declarations[0].value, "red");
+
+    assert_eq!(style.font_faces[0].declarations[0].name, "font-family");
+    assert_eq!(style.font_faces[0].declarations[0].value, "'MyFont'");
+    assert_eq!(style.font_faces[0].declarations[1].name, "src");
+    assert_eq!(style.font_faces[0].declarations[1].value, "local('Airal')");
+    assert_eq!(style.font_faces[0].declarations[2].name, "font-weight");
+    assert_eq!(style.font_faces[0].declarations[2].value, "200 800");
+}
