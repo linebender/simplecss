@@ -21,8 +21,8 @@ Since it's very simple we will start with limitations:
 
 ## Limitations
 
-- [At-rules](https://www.w3.org/TR/CSS21/syndata.html#at-rules) are not supported.
-  They will be skipped during parsing.
+- [Most at-rules](https://www.w3.org/TR/CSS21/syndata.html#at-rules) are not supported.
+  They will be skipped during parsing. The only supported at-rule is `@font-face`.
 - Property values are not parsed.
   In CSS like `* { width: 5px }` you will get a `width` property with a `5px` value as a string.
 - CDO/CDC comments are not supported.
@@ -34,6 +34,7 @@ Since it's very simple we will start with limitations:
 
 - Selector matching support.
 - The rules are sorted by specificity.
+- `@font-face` parsing support.
 - `!important` parsing support.
 - Has a high-level parsers and low-level, zero-allocation tokenizers.
 - No unsafe.
