@@ -12,8 +12,8 @@ Since it's very simple we will start with limitations:
 
 ## Limitations
 
-- [At-rules](https://www.w3.org/TR/CSS21/syndata.html#at-rules) are not supported.
-  They will be skipped during parsing.
+- [Most at-rules](https://www.w3.org/TR/CSS21/syndata.html#at-rules) are not supported.
+  They will be skipped during parsing. The only supported at-rule is `@font-face`.
 - Property values are not parsed.
   In CSS like `* { width: 5px }` you will get a `width` property with a `5px` value as a string.
 - CDO/CDC comments are not supported.
@@ -24,6 +24,7 @@ Since it's very simple we will start with limitations:
 
 - Selector matching support.
 - The rules are sorted by specificity.
+- `@font-face` parsing support.
 - `!important` parsing support.
 - Has a high-level parsers and low-level, zero-allocation tokenizers.
 - No unsafe.
@@ -38,7 +39,7 @@ Since it's very simple we will start with limitations:
 // Targeting e.g. 32-bit means structs containing usize can give false positives for 64-bit.
 #![cfg_attr(target_pointer_width = "64", warn(clippy::trivially_copy_pass_by_ref))]
 // END LINEBENDER LINT SET
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![no_std]
 // The following lints are part of the Linebender standard set,
 // but resolving them has been deferred for now.
@@ -192,6 +193,13 @@ pub struct Declaration<'a> {
     pub important: bool,
 }
 
+/// A `@font-face` rule.
+#[derive(Clone, Debug)]
+pub struct FontFaceRule<'a> {
+    /// A list of declarations inside this `@font-face` rule.
+    pub declarations: Vec<Declaration<'a>>,
+}
+
 /// A rule.
 #[derive(Clone, Debug)]
 pub struct Rule<'a> {
@@ -206,17 +214,23 @@ pub struct Rule<'a> {
 pub struct StyleSheet<'a> {
     /// A list of rules.
     pub rules: Vec<Rule<'a>>,
+    /// A list of `@font-face` rules.
+    pub font_faces: Vec<FontFaceRule<'a>>,
 }
 
 impl<'a> StyleSheet<'a> {
     /// Creates an empty style sheet.
     pub fn new() -> Self {
-        StyleSheet { rules: Vec::new() }
+        StyleSheet {
+            rules: Vec::new(),
+            font_faces: Vec::new(),
+        }
     }
 
     /// Parses a style sheet from text.
     ///
-    /// At-rules are not supported and will be skipped.
+    /// Most at-rules are not supported and will be skipped, except `@font-face`
+    /// rules which are parsed into [`FontFaceRule`]s.
     ///
     /// # Errors
     ///
@@ -242,7 +256,7 @@ impl<'a> StyleSheet<'a> {
                 break;
             }
 
-            let _ = consume_statement(&mut s, &mut self.rules);
+            let _ = consume_statement(&mut s, &mut self.rules, &mut self.font_faces);
         }
 
         if !s.at_end() {
@@ -286,19 +300,50 @@ impl Default for StyleSheet<'_> {
     }
 }
 
-fn consume_statement<'a>(s: &mut Stream<'a>, rules: &mut Vec<Rule<'a>>) -> Result<(), Error> {
+fn consume_statement<'a>(
+    s: &mut Stream<'a>,
+    rules: &mut Vec<Rule<'a>>,
+    font_faces: &mut Vec<FontFaceRule<'a>>,
+) -> Result<(), Error> {
     if s.curr_byte() == Ok(b'@') {
         s.advance(1);
-        consume_at_rule(s)
+        consume_at_rule(s, font_faces)
     } else {
         consume_rule_set(s, rules)
     }
 }
 
-fn consume_at_rule(s: &mut Stream<'_>) -> Result<(), Error> {
+fn consume_at_rule<'a>(
+    s: &mut Stream<'a>,
+    font_faces: &mut Vec<FontFaceRule<'a>>,
+) -> Result<(), Error> {
     let ident = s.consume_ident()?;
-    warn!("The @{} rule is not supported. Skipped.", ident);
 
+    if ident == "font-face" {
+        s.skip_spaces_and_comments()?;
+
+        if s.curr_byte() == Ok(b'{') {
+            s.advance(1);
+
+            let declarations = consume_declarations(s)?;
+            s.try_consume_byte(b'}');
+
+            if !declarations.is_empty() {
+                font_faces.push(FontFaceRule { declarations });
+            }
+        } else {
+            // Malformed `@font-face`; fall back to skipping it as an unknown at-rule.
+            skip_at_rule_body(s)?;
+        }
+    } else {
+        warn!("The @{} rule is not supported. Skipped.", ident);
+        skip_at_rule_body(s)?;
+    }
+
+    Ok(())
+}
+
+fn skip_at_rule_body(s: &mut Stream<'_>) -> Result<(), Error> {
     s.skip_bytes(|c| c != b';' && c != b'{');
 
     match s.curr_byte()? {
