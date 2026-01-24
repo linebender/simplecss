@@ -3,11 +3,11 @@
 
 //! Parse
 
-use std::io::{Read, Write};
+use std::io::Write;
 
 fn main() {
     let args: Vec<_> = std::env::args().collect();
-    if args.len() != 2 {
+    if args.len() < 2 || 3 < args.len() {
         println!("Usage:\n\tparse style.css\n\tparse - 'p {{ color:red }}'");
         std::process::exit(1);
     }
@@ -17,12 +17,8 @@ fn main() {
         .format(|buf, record| writeln!(buf, "{}: {}", record.level(), record.args()))
         .init();
 
-    let text = if args[1] == "-" {
-        let mut buffer = String::new();
-        let stdin = std::io::stdin();
-        let mut handle = stdin.lock();
-        handle.read_to_string(&mut buffer).unwrap();
-        buffer
+    let text = if args[1] == "-" && args.len() == 3 {
+        args[2].clone()
     } else {
         std::fs::read_to_string(&args[1]).unwrap()
     };

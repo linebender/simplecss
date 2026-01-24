@@ -4,22 +4,15 @@
 //! Warnings
 
 fn run_process(input: &str) -> String {
-    use std::io::Write;
     use std::process::Stdio;
 
-    let mut child = std::process::Command::new("target/debug/examples/parse")
+    let child = std::process::Command::new("target/debug/examples/parse")
         .arg("-")
+        .arg(input)
         .stdin(Stdio::piped())
         .stdout(Stdio::null())
         .stderr(Stdio::piped())
         .spawn()
-        .unwrap();
-
-    child
-        .stdin
-        .as_mut()
-        .unwrap()
-        .write_all(input.as_bytes())
         .unwrap();
 
     let output = child.wait_with_output().expect("Failed to read stdout");

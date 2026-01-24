@@ -54,6 +54,7 @@ pub enum PseudoClass<'a> {
     Active,
     Focus,
     Lang(&'a str),
+    Root,
 }
 
 impl fmt::Display for PseudoClass<'_> {
@@ -66,6 +67,7 @@ impl fmt::Display for PseudoClass<'_> {
             PseudoClass::Active => write!(f, "active"),
             PseudoClass::Focus => write!(f, "focus"),
             PseudoClass::Lang(lang) => write!(f, "lang({lang})"),
+            PseudoClass::Root => write!(f, "root"),
         }
     }
 }
@@ -314,6 +316,7 @@ pub(crate) fn parse(text: &str) -> (Option<Selector<'_>>, usize) {
                     "hover" => PseudoClass::Hover,
                     "active" => PseudoClass::Active,
                     "focus" => PseudoClass::Focus,
+                    "root" => PseudoClass::Root,
                     _ => {
                         warn!("':{}' is not supported. Selector skipped.", ident);
                         return (None, tokenizer.stream.pos());
