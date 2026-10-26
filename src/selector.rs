@@ -512,24 +512,32 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
             b'[' => {
                 self.after_combinator = false;
                 self.stream.advance(1);
+                // CSS 2.1 `attrib`:
+                // '[' S* IDENT S* [ [ '=' | INCLUDES | DASHMATCH ] S*
+                //     [ IDENT | STRING ] S* ]? ']'
+                try2!(self.stream.skip_spaces_and_comments());
                 let ident = try2!(self.stream.consume_ident());
+                try2!(self.stream.skip_spaces_and_comments());
 
                 let op = match try2!(self.stream.curr_byte()) {
                     b']' => AttributeOperator::Exists,
                     b'=' => {
                         self.stream.advance(1);
+                        try2!(self.stream.skip_spaces_and_comments());
                         let value = try2!(self.stream.consume_string());
                         AttributeOperator::Matches(value)
                     }
                     b'~' => {
                         self.stream.advance(1);
                         try2!(self.stream.consume_byte(b'='));
+                        try2!(self.stream.skip_spaces_and_comments());
                         let value = try2!(self.stream.consume_string());
                         AttributeOperator::Contains(value)
                     }
                     b'|' => {
                         self.stream.advance(1);
                         try2!(self.stream.consume_byte(b'='));
+                        try2!(self.stream.skip_spaces_and_comments());
                         let value = try2!(self.stream.consume_string());
                         AttributeOperator::StartsWith(value)
                     }
@@ -539,6 +547,7 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
                     }
                 };
 
+                try2!(self.stream.skip_spaces_and_comments());
                 try2!(self.stream.consume_byte(b']'));
 
                 Some(Ok(SelectorToken::AttributeSelector(ident, op)))

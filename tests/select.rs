@@ -381,6 +381,7 @@ fn select_22() {
     .unwrap();
 
     assert_eq!(match_single!(doc, "[id=p1]"), "p1");
+    assert_eq!(match_single!(doc, "[ id = p1 ]"), "p1");
 }
 
 #[test]

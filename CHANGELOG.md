@@ -15,6 +15,10 @@ You can find its changes [documented below](#022-2025-01-06).
 
 This release has an [MSRV][] of 1.65.
 
+### Fixed
+
+- Attribute selectors now accept the CSS 2.1 `S*` whitespace (and comments) around the name, operator, value, and closing `]`. Compact forms such as `[id=test]` are unchanged.
+
 ## [0.2.2][] (2025-01-06)
 
 This release has an [MSRV][] of 1.65.

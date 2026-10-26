@@ -76,6 +76,66 @@ tokenize!(
 );
 
 tokenize!(
+    tokenize_attr_space_01,
+    "[ id]",
+    SelectorToken::AttributeSelector("id", AttributeOperator::Exists)
+);
+
+tokenize!(
+    tokenize_attr_space_02,
+    "[id ]",
+    SelectorToken::AttributeSelector("id", AttributeOperator::Exists)
+);
+
+tokenize!(
+    tokenize_attr_space_03,
+    "[ id ]",
+    SelectorToken::AttributeSelector("id", AttributeOperator::Exists)
+);
+
+tokenize!(
+    tokenize_attr_space_04,
+    "[id = test]",
+    SelectorToken::AttributeSelector("id", AttributeOperator::Matches("test"))
+);
+
+tokenize!(
+    tokenize_attr_space_05,
+    "[ id = test ]",
+    SelectorToken::AttributeSelector("id", AttributeOperator::Matches("test"))
+);
+
+tokenize!(
+    tokenize_attr_space_06,
+    "[id ~= warn]",
+    SelectorToken::AttributeSelector("id", AttributeOperator::Contains("warn"))
+);
+
+tokenize!(
+    tokenize_attr_space_07,
+    "[lang |= en]",
+    SelectorToken::AttributeSelector("lang", AttributeOperator::StartsWith("en"))
+);
+
+tokenize!(
+    tokenize_attr_space_08,
+    "[id = 'test']",
+    SelectorToken::AttributeSelector("id", AttributeOperator::Matches("test"))
+);
+
+tokenize!(
+    tokenize_attr_comment_01,
+    "[/**/id/**/]",
+    SelectorToken::AttributeSelector("id", AttributeOperator::Exists)
+);
+
+tokenize!(
+    tokenize_attr_comment_02,
+    "[/**/id/**/=/**/test/**/]",
+    SelectorToken::AttributeSelector("id", AttributeOperator::Matches("test"))
+);
+
+tokenize!(
     tokenize_13,
     "div:first-child",
     SelectorToken::TypeSelector("div"),
@@ -360,6 +420,12 @@ malformed!(
     malformed_15,
     "[olor:red",
     "invalid or unsupported attribute selector"
+);
+
+malformed!(
+    malformed_attr_split_includes,
+    "[id ~ = test]",
+    "expected '=' not ' ' at 1:6"
 );
 
 malformed!(malformed_16, "", "selector missing");
