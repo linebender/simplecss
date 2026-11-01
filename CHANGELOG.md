@@ -15,6 +15,10 @@ You can find its changes [documented below](#022-2025-01-06).
 
 This release has an [MSRV][] of 1.65.
 
+### Fixed
+
+- Parsing a style sheet no longer takes quadratic time in the number of declarations.
+
 ## [0.2.2][] (2025-01-06)
 
 This release has an [MSRV][] of 1.65.

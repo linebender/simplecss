@@ -68,7 +68,7 @@ mod selector;
 mod stream;
 
 pub use selector::*;
-use stream::Stream;
+use stream::{Fault, Stream};
 
 /// A list of possible errors.
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -304,7 +304,7 @@ fn consume_statement<'a>(
     s: &mut Stream<'a>,
     rules: &mut Vec<Rule<'a>>,
     font_faces: &mut Vec<FontFaceRule<'a>>,
-) -> Result<(), Error> {
+) -> Result<(), Fault> {
     if s.curr_byte() == Ok(b'@') {
         s.advance(1);
         consume_at_rule(s, font_faces)
@@ -316,7 +316,7 @@ fn consume_statement<'a>(
 fn consume_at_rule<'a>(
     s: &mut Stream<'a>,
     font_faces: &mut Vec<FontFaceRule<'a>>,
-) -> Result<(), Error> {
+) -> Result<(), Fault> {
     let ident = s.consume_ident()?;
 
     if ident == "font-face" {
@@ -343,7 +343,7 @@ fn consume_at_rule<'a>(
     Ok(())
 }
 
-fn skip_at_rule_body(s: &mut Stream<'_>) -> Result<(), Error> {
+fn skip_at_rule_body(s: &mut Stream<'_>) -> Result<(), Fault> {
     s.skip_bytes(|c| c != b';' && c != b'{');
 
     match s.curr_byte()? {
@@ -355,7 +355,7 @@ fn skip_at_rule_body(s: &mut Stream<'_>) -> Result<(), Error> {
     Ok(())
 }
 
-fn consume_rule_set<'a>(s: &mut Stream<'a>, rules: &mut Vec<Rule<'a>>) -> Result<(), Error> {
+fn consume_rule_set<'a>(s: &mut Stream<'a>, rules: &mut Vec<Rule<'a>>) -> Result<(), Fault> {
     let start_rule_idx = rules.len();
 
     while s.curr_byte()? == b',' || start_rule_idx == rules.len() {
@@ -428,7 +428,7 @@ fn consume_until_block_end(s: &mut Stream<'_>) {
     s.try_consume_byte(b'}');
 }
 
-fn consume_declarations<'a>(s: &mut Stream<'a>) -> Result<Vec<Declaration<'a>>, Error> {
+fn consume_declarations<'a>(s: &mut Stream<'a>) -> Result<Vec<Declaration<'a>>, Fault> {
     let mut declarations = Vec::new();
 
     while !s.at_end() && s.curr_byte() != Ok(b'}') {
@@ -489,7 +489,7 @@ impl<'a> Iterator for DeclarationTokenizer<'a> {
     }
 }
 
-fn consume_declaration<'a>(s: &mut Stream<'a>) -> Result<Declaration<'a>, Error> {
+fn consume_declaration<'a>(s: &mut Stream<'a>) -> Result<Declaration<'a>, Fault> {
     s.skip_spaces_and_comments()?;
 
     // Parse name.
@@ -537,7 +537,7 @@ fn consume_declaration<'a>(s: &mut Stream<'a>) -> Result<Declaration<'a>, Error>
     s.skip_spaces_and_comments()?;
 
     if value.is_empty() {
-        return Err(Error::InvalidValue(s.gen_text_pos_from(start)));
+        return Err(Fault::InvalidValue(start));
     }
 
     Ok(Declaration {
@@ -547,7 +547,7 @@ fn consume_declaration<'a>(s: &mut Stream<'a>) -> Result<Declaration<'a>, Error>
     })
 }
 
-fn consume_term(s: &mut Stream<'_>) -> Result<(), Error> {
+fn consume_term(s: &mut Stream<'_>) -> Result<(), Fault> {
     fn consume_digits(s: &mut Stream<'_>) {
         while let Ok(b'0'..=b'9') = s.curr_byte() {
             s.advance(1);

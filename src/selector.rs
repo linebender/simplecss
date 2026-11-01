@@ -6,7 +6,7 @@ use core::fmt;
 
 use log::warn;
 
-use crate::stream::Stream;
+use crate::stream::{Fault, Stream};
 use crate::Error;
 
 /// An attribute selector operator.
@@ -244,7 +244,7 @@ pub(crate) fn parse(text: &str) -> (Option<Selector<'_>>, usize) {
     let mut combinator = Combinator::None;
 
     let mut tokenizer = SelectorTokenizer::from(text);
-    for token in &mut tokenizer {
+    while let Some(token) = tokenizer.next_fault() {
         let mut add_sub = |sub| {
             if combinator == Combinator::None && !components.is_empty() {
                 if let Some(ref mut component) = components.last_mut() {
@@ -266,7 +266,7 @@ pub(crate) fn parse(text: &str) -> (Option<Selector<'_>>, usize) {
         let token = match token {
             Ok(t) => t,
             Err(e) => {
-                warn!("Selector parsing failed cause {}.", e);
+                warn!("Selector parsing failed cause {}.", e.into_error(text));
                 return (None, tokenizer.stream.pos());
             }
         };
@@ -465,10 +465,18 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
     type Item = Result<SelectorToken<'a>, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        let text = self.stream.text();
+        self.next_fault()
+            .map(|token| token.map_err(|fault| fault.into_error(text)))
+    }
+}
+
+impl<'a> SelectorTokenizer<'a> {
+    fn next_fault(&mut self) -> Option<Result<SelectorToken<'a>, Fault>> {
         if self.finished || self.stream.at_end() {
             if self.after_combinator {
                 self.after_combinator = false;
-                return Some(Err(Error::SelectorMissing));
+                return Some(Err(Error::SelectorMissing.into()));
             }
 
             return None;
@@ -490,7 +498,7 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
             b'*' => {
                 if !self.after_combinator {
                     self.finished = true;
-                    return Some(Err(Error::UnexpectedSelector));
+                    return Some(Err(Error::UnexpectedSelector.into()));
                 }
 
                 self.after_combinator = false;
@@ -535,7 +543,7 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
                     }
                     _ => {
                         self.finished = true;
-                        return Some(Err(Error::InvalidAttributeSelector));
+                        return Some(Err(Error::InvalidAttributeSelector.into()));
                     }
                 };
 
@@ -555,7 +563,7 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
 
                     if lang.is_empty() {
                         self.finished = true;
-                        return Some(Err(Error::InvalidLanguagePseudoClass));
+                        return Some(Err(Error::InvalidLanguagePseudoClass.into()));
                     }
 
                     Some(Ok(SelectorToken::LangPseudoClass(lang)))
@@ -567,7 +575,7 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
                 if self.after_combinator {
                     self.after_combinator = false;
                     self.finished = true;
-                    return Some(Err(Error::UnexpectedCombinator));
+                    return Some(Err(Error::UnexpectedCombinator.into()));
                 }
 
                 self.stream.advance(1);
@@ -578,7 +586,7 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
                 if self.after_combinator {
                     self.after_combinator = false;
                     self.finished = true;
-                    return Some(Err(Error::UnexpectedCombinator));
+                    return Some(Err(Error::UnexpectedCombinator.into()));
                 }
 
                 self.stream.advance(1);
@@ -589,7 +597,7 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
                 self.stream.skip_spaces();
 
                 if self.after_combinator {
-                    return self.next();
+                    return self.next_fault();
                 }
 
                 while self.stream.curr_byte() == Ok(b'/') {
@@ -598,12 +606,12 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
                 }
 
                 match self.stream.curr_byte() {
-                    Ok(b'>') | Ok(b'+') | Ok(b',') | Ok(b'{') | Err(_) => self.next(),
+                    Ok(b'>') | Ok(b'+') | Ok(b',') | Ok(b'{') | Err(_) => self.next_fault(),
                     _ => {
                         if self.after_combinator {
                             self.after_combinator = false;
                             self.finished = true;
-                            return Some(Err(Error::UnexpectedSelector));
+                            return Some(Err(Error::UnexpectedSelector.into()));
                         }
 
                         self.after_combinator = true;
@@ -618,18 +626,18 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
                     self.finished = true;
                 }
 
-                self.next()
+                self.next_fault()
             }
             b',' | b'{' => {
                 self.finished = true;
-                self.next()
+                self.next_fault()
             }
             _ => {
                 let ident = try2!(self.stream.consume_ident());
 
                 if !self.after_combinator {
                     self.finished = true;
-                    return Some(Err(Error::UnexpectedSelector));
+                    return Some(Err(Error::UnexpectedSelector.into()));
                 }
 
                 self.after_combinator = false;

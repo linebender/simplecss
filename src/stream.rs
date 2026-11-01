@@ -5,6 +5,79 @@ use core::str;
 
 use crate::{Error, TextPos};
 
+/// An [`Error`] that keeps a byte offset instead of a [`TextPos`].
+///
+/// Calculating a [`TextPos`] walks all the text before it, and the parser ignores most errors,
+/// so it's done only when an error reaches the caller.
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub(crate) enum Fault {
+    Error(Error),
+    InvalidIdent(usize),
+    InvalidComment(usize),
+    InvalidValue(usize),
+    InvalidByte {
+        expected: u8,
+        actual: u8,
+        pos: usize,
+    },
+}
+
+impl From<Error> for Fault {
+    fn from(e: Error) -> Self {
+        Fault::Error(e)
+    }
+}
+
+impl Fault {
+    pub(crate) fn into_error(self, text: &str) -> Error {
+        match self {
+            Fault::Error(e) => e,
+            Fault::InvalidIdent(pos) => Error::InvalidIdent(text_pos(text, pos)),
+            Fault::InvalidComment(pos) => Error::InvalidComment(text_pos(text, pos)),
+            Fault::InvalidValue(pos) => Error::InvalidValue(text_pos(text, pos)),
+            Fault::InvalidByte {
+                expected,
+                actual,
+                pos,
+            } => Error::InvalidByte {
+                expected,
+                actual,
+                pos: text_pos(text, pos),
+            },
+        }
+    }
+}
+
+#[inline(never)]
+fn text_pos(text: &str, pos: usize) -> TextPos {
+    let pos = core::cmp::min(pos, text.len());
+    TextPos::new(calc_row(text, pos), calc_col(text, pos))
+}
+
+fn calc_row(text: &str, end: usize) -> u32 {
+    let mut row = 1;
+    for c in &text.as_bytes()[..end] {
+        if *c == b'\n' {
+            row += 1;
+        }
+    }
+
+    row
+}
+
+fn calc_col(text: &str, end: usize) -> u32 {
+    let mut col = 1;
+    for c in text[..end].chars().rev() {
+        if c == '\n' {
+            break;
+        } else {
+            col += 1;
+        }
+    }
+
+    col
+}
+
 trait CssCharExt {
     fn is_name_start(&self) -> bool;
     fn is_name_char(&self) -> bool;
@@ -64,6 +137,11 @@ impl<'a> Stream<'a> {
     }
 
     #[inline]
+    pub fn text(&self) -> &'a str {
+        self.text
+    }
+
+    #[inline]
     pub fn pos(&self) -> usize {
         self.pos
     }
@@ -79,9 +157,9 @@ impl<'a> Stream<'a> {
     }
 
     #[inline]
-    pub fn curr_byte(&self) -> Result<u8, Error> {
+    pub fn curr_byte(&self) -> Result<u8, Fault> {
         if self.at_end() {
-            return Err(Error::UnexpectedEndOfStream);
+            return Err(Error::UnexpectedEndOfStream.into());
         }
 
         Ok(self.curr_byte_unchecked())
@@ -93,9 +171,9 @@ impl<'a> Stream<'a> {
     }
 
     #[inline]
-    pub fn next_byte(&self) -> Result<u8, Error> {
+    pub fn next_byte(&self) -> Result<u8, Fault> {
         if self.pos + 1 >= self.end {
-            return Err(Error::UnexpectedEndOfStream);
+            return Err(Error::UnexpectedEndOfStream.into());
         }
 
         Ok(self.text.as_bytes()[self.pos + 1])
@@ -107,12 +185,12 @@ impl<'a> Stream<'a> {
         self.pos += n;
     }
 
-    pub fn consume_byte(&mut self, c: u8) -> Result<(), Error> {
+    pub fn consume_byte(&mut self, c: u8) -> Result<(), Fault> {
         if self.curr_byte()? != c {
-            return Err(Error::InvalidByte {
+            return Err(Fault::InvalidByte {
                 expected: c,
                 actual: self.curr_byte()?,
-                pos: self.gen_text_pos(),
+                pos: self.pos,
             });
         }
 
@@ -175,7 +253,7 @@ impl<'a> Stream<'a> {
     }
 
     #[inline]
-    pub fn skip_spaces_and_comments(&mut self) -> Result<(), Error> {
+    pub fn skip_spaces_and_comments(&mut self) -> Result<(), Fault> {
         self.skip_spaces();
         while self.curr_byte() == Ok(b'/') && self.next_byte() == Ok(b'*') {
             self.skip_comment()?;
@@ -185,7 +263,7 @@ impl<'a> Stream<'a> {
         Ok(())
     }
 
-    pub fn consume_ident(&mut self) -> Result<&'a str, Error> {
+    pub fn consume_ident(&mut self) -> Result<&'a str, Fault> {
         let start = self.pos();
 
         if self.curr_byte() == Ok(b'-') {
@@ -197,7 +275,7 @@ impl<'a> Stream<'a> {
             if c.is_name_start() {
                 self.advance(c.len_utf8());
             } else {
-                return Err(Error::InvalidIdent(self.gen_text_pos_from(start)));
+                return Err(Fault::InvalidIdent(start));
             }
         }
 
@@ -210,14 +288,14 @@ impl<'a> Stream<'a> {
         }
 
         if start == self.pos() {
-            return Err(Error::InvalidIdent(self.gen_text_pos_from(start)));
+            return Err(Fault::InvalidIdent(start));
         }
 
         let name = self.slice_back(start);
         Ok(name)
     }
 
-    pub fn consume_string(&mut self) -> Result<&'a str, Error> {
+    pub fn consume_string(&mut self) -> Result<&'a str, Fault> {
         // Check for opening quote.
         let quote = self.curr_byte()?;
         if quote == b'\'' || quote == b'"' {
@@ -252,14 +330,14 @@ impl<'a> Stream<'a> {
         }
     }
 
-    pub fn skip_comment(&mut self) -> Result<(), Error> {
+    pub fn skip_comment(&mut self) -> Result<(), Fault> {
         let start = self.pos();
         self.skip_comment_impl()
-            .map_err(|_| Error::InvalidComment(self.gen_text_pos_from(start)))?;
+            .map_err(|_| Fault::InvalidComment(start))?;
         Ok(())
     }
 
-    fn skip_comment_impl(&mut self) -> Result<(), Error> {
+    fn skip_comment_impl(&mut self) -> Result<(), Fault> {
         self.consume_byte(b'/')?;
         self.consume_byte(b'*')?;
 
@@ -275,43 +353,5 @@ impl<'a> Stream<'a> {
         self.consume_byte(b'*')?;
         self.consume_byte(b'/')?;
         Ok(())
-    }
-
-    #[inline(never)]
-    pub fn gen_text_pos(&self) -> TextPos {
-        let row = Self::calc_curr_row(self.text, self.pos);
-        let col = Self::calc_curr_col(self.text, self.pos);
-        TextPos::new(row, col)
-    }
-
-    #[inline(never)]
-    pub fn gen_text_pos_from(&self, pos: usize) -> TextPos {
-        let mut s = *self;
-        s.pos = core::cmp::min(pos, self.text.len());
-        s.gen_text_pos()
-    }
-
-    fn calc_curr_row(text: &str, end: usize) -> u32 {
-        let mut row = 1;
-        for c in &text.as_bytes()[..end] {
-            if *c == b'\n' {
-                row += 1;
-            }
-        }
-
-        row
-    }
-
-    fn calc_curr_col(text: &str, end: usize) -> u32 {
-        let mut col = 1;
-        for c in text[..end].chars().rev() {
-            if c == '\n' {
-                break;
-            } else {
-                col += 1;
-            }
-        }
-
-        col
     }
 }
