@@ -219,3 +219,13 @@ fn font_face_03_mixed_with_rules() {
     assert_eq!(style.font_faces[0].declarations[2].name, "font-weight");
     assert_eq!(style.font_faces[0].declarations[2].value, "200 800");
 }
+
+#[test]
+fn many_declarations() {
+    let block = vec!["fill:red"; 100_000].join(";");
+    let text = format!("rect {{{block}}}");
+    let style = StyleSheet::parse(&text);
+    assert_eq!(style.rules.len(), 1);
+    assert_eq!(style.rules[0].declarations.len(), 100_000);
+    assert_eq!(DeclarationTokenizer::from(block.as_str()).count(), 100_000);
+}
